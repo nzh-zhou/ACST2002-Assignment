@@ -1,12 +1,12 @@
 ---
 title: "ACST2002 Assignment"
 author: "Ze Hong Zhou"
-date: "04/05/2022"
+date: '`r paste0("2022-05-04 (last edited ", format(Sys.time(), "%Y-%m-%d"), ")")`'
 output:
   bookdown::pdf_document2:
     toc: false
     number_sections: false
-    extra_dependencies: ["actuarialsymbol"]
+    extra_dependencies: ["amsmath", "actuarialsymbol"]
 ---
 
 ```{r setup, include = FALSE}
@@ -15,11 +15,17 @@ knitr::opts_chunk$set(
   comment = "#>",
   echo = FALSE
 )
+options(scipen=999)
+```
+
+Note: This report was written in `R`. Code for tables is shown to demonstrate methodology. The methodology can also be understood by viewing cell formulas in the Excel spreadsheet.
+
+```{r, echo = TRUE, message = FALSE}
 library(tidyverse)
 library(kableExtra)
 ```
 
-# Question (a) {#qa}
+# Question (a)
 
 **Write down an efficient recurrence relation for $a_{\angln}$. Explain your thought process in words (e.g., using the timeline approach) or prove the result mathematically from first principles. Also write down the initial value for the sequence.**
 
@@ -29,7 +35,7 @@ $$
 a_{\angln} = a_{\angl{n-1}} + v^n.
 $$
 
-# Question (b) {#qb}
+# Question (b)
 
 **Given an effective discrete periodic rate of 4% per period, tabulate the values of $a_{\angln}$ for
 $n \in [1, 40] \cap \mathbb{Z}$.**
@@ -40,17 +46,24 @@ $$
 a_{\angln} = a_{\angl{1}} + \sum_{t=2}^{n}\left(v^t\right) = \sum_{t=1}^{n}\left(v^t\right) = \frac{v(1-v^n)}{1-v} = \frac{1-v^n}{(1+i)-1} = \frac{1-v^n}{i}.
 $$
 
-When $i=4\%$, this formula gives the following values of $a_{\angln}$ for $n \in [1, 40] \cap \mathbb{Z}$.
+When $i=4\%$, after applying this formula, the following table gives the values of $a_{\angln}$ for all $n \in [1, 40] \cap \mathbb{Z}$.
 
-```{r}
-tibble(n = 1:40, i = rep(0.04, times = 40), a_n = ((1-(1+i)^-n)/i) %>% round(2)) %>% 
-  kbl(col.names = c("$n$", "$i$", "$a_{\\angln}$"), escape = FALSE) %>% 
+```{r an, echo = TRUE}
+n <- 1:40
+i <- rep(0.04, times = 40)
+a_n <- (1-(1+i)^-n)/i
+
+tibble(n. = n, i. = i, a_n. = round(a_n, 2)) %>% 
+  mutate(i. = paste0(i*100, "\\%")) %>% 
+  kbl(col.names = c("$n$", "$i$", "$a_{\\angln}$ (2dp)"), 
+      escape = FALSE, align = "rrr", longtable = TRUE, 
+      caption = "Table of values for $a_{\\angln}$.") %>% 
   kable_styling(latex_options = "HOLD_position") %>% 
   column_spec(1, border_left = TRUE) %>% 
   column_spec(3, border_right = TRUE)
 ```
 
-# Question (c) {#qc}
+# Question (c)
 
 **Repeat parts (a) and (b) for $(Ia)_{\angln}$ instead of $a_{\angln}$.**
 
@@ -60,29 +73,27 @@ $$
 (Ia)_{\angln} = (Ia)_{\angl{n-1}} + nv^n.
 $$
 
-Applying the recursive equation $n-1$ times,
+$(Ia)_{\angl{1}} = v$. $(Ia)_{\angl{2}}$ can be found by applying this formula, using the cell entry for $(Ia)_{\angl{1}}$. This formula can then be applied recursively (over and over again) until one reaches their desired target (in this case $(Ia)_{\angl{40}}$).
 
-\begin{equation*}
-\begin{aligned}
-(Ia)_{\angln} &= (Ia)_{\angl{1}} + \sum_{t=2}^{n}\left(tv^t\right) = \sum_{t=1}^{n}\left(tv^t\right) \\
-(1+i)(Ia)_{\angln} &= \sum_{t=1}^{n}\left(tv^{t-1}\right) = \sum_{t=0}^{n-1}\left((t+1)v^{t}\right) \\
-(1+i-1)(Ia)_{\angln} &= 1 + \sum_{t=1}^{n-1}\left((t+1-t)v^t\right) - nv^n \\
-i(Ia)_{\angln} &= \sum_{t=0}^{n-1}\left(v^t\right) - nv^n = (1+i)a_{\angln}-nv^n \\
-(Ia)_{\angln} &= \frac{(1+i)a_{\angln}-nv^n}{i}.
-\end{aligned}
-\end{equation*}
+When $i=4\%$, the following table gives the values of $(Ia)_{\angln}$ for all $n \in [1, 40] \cap \mathbb{Z}$.
 
-When $i=4\%$, this formula gives the following values of $(Ia)_{\angln}$ for $n \in [1, 40] \cap \mathbb{Z}$.
+```{r ian, echo = TRUE}
+Ia_n <- (1+i[1])^-1
+for (t in 2:length(n)) {
+  Ia_n[t] <- Ia_n[t-1] + t*(1+i[t])^-t
+}
 
-```{r}
-tibble(n = 1:40, i = rep(0.04, times = 40), Ia_n = (((1+i)*(1-(1+i)^-n)/i-n*(1+i)^-n)/i) %>% round(2)) %>% 
-  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$"), escape = FALSE) %>% 
+tibble(n. = n, i. = i, Ia_n. = round(Ia_n, 2)) %>% 
+  mutate(i. = paste0(i*100, "\\%")) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$ (2dp)"), 
+      escape = FALSE, align = "rrr", longtable = TRUE,
+      caption = "Table of values for $(Ia)_{\\angln}$.") %>% 
   kable_styling(latex_options = "HOLD_position") %>% 
   column_spec(1, border_left = TRUE) %>% 
   column_spec(3, border_right = TRUE)
 ```
 
-# Question (d) {#qd}
+# Question (d)
 
 **Suppose that we would like to develop the relevant calculations for a new actuarial
 notation defined as $(Qa)_{\angln}=\sum_{t=1}^{n}\left(t^2v^t\right)$. Repeat parts (a) and (b) for $(Qa)_{\angln}$ instead of $a_{\angln}$.**
@@ -93,69 +104,123 @@ $$
 (Qa)_{\angln} = (Qa)_{\angl{n-1}} + n^2v^n.
 $$
 
-$(Qa)_{\angl{1}} = v$. $(Qa)_{\angl{2}}$ can be found by applying this formula using the cell entry for $(Qa)_{\angl{1}}$. This formula can then be applied recursively until one reaches their desired target.
+$(Qa)_{\angl{1}} = v$. $(Qa)_{\angl{2}}$ can be found by applying this formula, using the cell entry for $(Qa)_{\angl{1}}$. This formula can then be applied recursively until one reaches their desired target ($(Qa)_{\angl{40}}$).
 
-```{r}
-n <- 1:40
-i <- rep(0.04, times = 40)
-y <- numeric()
-y[1] <- (1+i[1])^-1
-for (x in seq_along(n)[2:length(n)]) {
-  y[x] <- y[x-1] + x*(1+i[x])^x
+When $i=4\%$, the following table gives the values of $(Qa)_{\angln}$ for all $n \in [1, 40] \cap \mathbb{Z}$.
+
+```{r qan, echo = TRUE}
+Qa_n <- (1+i[1])^-1
+for (t in 2:length(n)) {
+  Qa_n[t] <- Qa_n[t-1] + t^2*(1+i[t])^-t
 }
-tibble(n = 1:40, i = rep(0.04, times = 40), Qa_n = round(y, 2)) %>% 
-  kbl(col.names = c("$n$", "$i$", "$(Qa)_{\\angln}$"), escape = FALSE) %>% 
+
+tibble(n. = n, i. = i, Qa_n. = round(Qa_n, 2)) %>% 
+  mutate(i. = paste0(i*100, "\\%")) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Qa)_{\\angln} (2dp)$"), 
+      escape = FALSE, align = "rrr", longtable = TRUE,
+      caption = "Table of values for $(Qa)_{\\angln}$.") %>% 
   kable_styling(latex_options = "HOLD_position") %>% 
   column_spec(1, border_left = TRUE) %>% 
   column_spec(3, border_right = TRUE)
-rm(list = ls())
 ```
 
-# Question (e) {#qe}
+# Question (e)
 
 **Simplify $(I\ddot{a})_{\angln}-(Ia)_{\angln}$ and hence derive a formula for $(Ia)_{\angln}$.**
 
-\begin{equation*}
-\begin{aligned}
+\begin{align*}
 (I\ddot{a})_{\angln}-(Ia)_{\angln} &= \sum_{t=0}^{t=n-1}\left((t+1)v^t\right) - \sum_{t=1}^{n}\left(tv^t\right) \\
 &= 1 + \sum_{t=1}^{n-1}\left(v^t\right) - nv^n \\
 &= \ddot{a}_{\angln} - nv^n
-\end{aligned}
-\end{equation*}
+\end{align*}
 
 But $(I\ddot{a})_{\angln} = (1+i)(Ia)_{\angln}$, so
 
-\begin{equation*}
-\begin{aligned}
-(1+i-1)(Ia)_{\angln} &= \ddot{a}_{\angln} - nv^n \\
-(Ia)_{\angln} &= \frac{\ddot{a}_{\angln} - nv^n}{i}.
-\end{aligned}
-\end{equation*}
+\begin{align}
+(1+i-1)(Ia)_{\angln} &= \ddot{a}_{\angln} - nv^n \nonumber \\
+(Ia)_{\angln} &= \frac{\ddot{a}_{\angln} - nv^n}{i}. (\#eq:ian)
+\end{align}
 
-# Question (f) {#qf}
+# Question (f)
 
 **Suppose that $(Q\ddot{a})_{\angln} = \sum_{t=1}^{n}\left(t^2v^{t-1}\right)$, simplify $(Q\ddot{a})_{\angln} - (Qa)_{\angln}$ and hence derive a formula for $(Qa)_{\angln}$.**
 
-\begin{equation*}
-\begin{aligned}
+\begin{align*}
 (Q\ddot{a})_{\angln}-(Qa)_{\angln} &= \sum_{t=0}^{t=n-1}\left((t+1)^2v^t\right) - \sum_{t=1}^{n}\left(t^2v^t\right) \\
 &= 1 + \sum_{t=1}^{n-1}\left((t^2+2t+1-t^2)v^t\right) - n^2v^n \\
 &= 1 + 2\sum_{t=1}^{n-1}\left(tv^t\right) + \sum_{t=1}^{n-1}\left(v^t\right) - n^2v^n \\
 &= 2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n
-\end{aligned}
-\end{equation*}
+\end{align*}
 
 But $(Q\ddot{a})_{\angln} = (1+i)(Qa)_{\angln}$, so
 
-\begin{equation*}
-\begin{aligned}
-(1+i-1)(Qa)_{\angln} &= 2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n \\
-(Qa)_{\angln} &= \frac{2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n}{i}.
-\end{aligned}
-\end{equation*}
+\begin{align}
+(1+i-1)(Qa)_{\angln} &= 2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n \nonumber \\
+(Qa)_{\angln} &= \frac{2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n}{i}.(\#eq:qan)
+\end{align}
 
-# Question (g) {#qg}
+# Question (g)
 
+**Using the formulae developed in parts (e) and (f), re-calculate the relevant values of
+annuity functions in parts (c) and (d).**
+
+The following two tables are constructed by applying equations \@ref(eq:ian) and \@ref(eq:qan) for all $n \in [1, 40] \cap \mathbb{Z}$.
+
+```{r, echo = TRUE}
+n0 <- 0:40
+i0 <- rep(0.04, times = 41)
+Ia_n0 = ((1+i0)*(1-(1+i0)^-n0)/i0 - n0*(1+i0)^-n0) / i0
+
+Ia_n <- Ia_n0[2:length(Ia_n0)]
+
+tibble(n. = n, i. = i, Ia_n. = round(Ia_n, 2)) %>% 
+  mutate(i. = paste0(i*100, "\\%")) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$ (2dp)"), 
+      escape = FALSE, align = "rrr", longtable = TRUE) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  column_spec(1, border_left = TRUE) %>% 
+  column_spec(3, border_right = TRUE)
+```
+
+```{r, echo = TRUE}
+Ia_n_1 <- Ia_n0[1:(length(Ia_n0)-1)]
+
+Qa_n <- (2*Ia_n_1 + (1+i)*(1-(1+i)^-n)/i - n^2*(1+i)^-n) / i
+
+tibble(n. = n, i. = i, Qa_n. = round(Qa_n, 2)) %>% 
+  mutate(i. = paste0(i*100, "\\%")) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Qa)_{\\angln} (2dp)$"), 
+      escape = FALSE, align = "rrr", longtable = TRUE) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  column_spec(1, border_left = TRUE) %>% 
+  column_spec(3, border_right = TRUE)
+```
+
+# Question (h)
+
+**Comment on the advantages and disadvantages of the two different approaches (recurrence relation and algebraic formula) used in constructing the relevant tabulated values above.**
+
+Both approaches can be split into two steps: writing a formula, and then applying it. The first step is usually easier for the recurrence relation approach, but the second step is usually easier for the algebraic formula approach.
+
+* A recurrence equation is usually easier to find in closed form compared to its corresponding algebraic equation.
+  - The algebraic equation may not even be able to be expressed in closed form. A recurrence equation usually will be.
+* The recurrence equation needs to be applied many times to find other terms of the sequence before applying it to find the desired term, while the algebratic equation only needs to be applied once.
+
+# Question (i)
+
+**A loan of $700,000 is to be fully repaid by 25 level annual repayments made in arrears at an effective annual rate of 4% per annum. Calculate the amount of the level annual repayment.**
+
+Let the annual repayment amount be $X$. Since the loan is fully repaid, the present value of the $700,000 cash flow must equal the present value of the 25 annual repayment cash flows.
+
+\begin{align*}
+700000 &= \sum_{t=1}^{25}\left(X\cdot(1.04)^{-t}\right) \\
+700000 &= Xa_{\angl{25}} \\
+X &= \frac{700000}{a_{\angl{25}}} = `r (700000 / a_n[25]) %>% round(2)`\;\;\text{ from Table \ref{tab:an}.}
+\end{align*}
+
+# Question (j)
+
+**A loan of $450,000 is to be fully repaid by level semi-annual repayments made in arrears for the next 8 years. The equivalent constant force of interest for this loan is 7.8441426% per annum. Calculate the amount of the capital repayment between the 3rd and the 6th year.**
 
 
 
