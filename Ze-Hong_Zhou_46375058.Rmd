@@ -1,0 +1,168 @@
+---
+title: "ACST2002 Assignment"
+author: "Ze Hong Zhou"
+date: "04/05/2022"
+output:
+  bookdown::pdf_document2:
+    toc: false
+    number_sections: false
+    extra_dependencies: ["actuarialsymbol"]
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo = FALSE
+)
+library(tidyverse)
+library(kableExtra)
+```
+
+# Question (a) {#qa}
+
+**Write down an efficient recurrence relation for $a_{\angln}$. Explain your thought process in words (e.g., using the timeline approach) or prove the result mathematically from first principles. Also write down the initial value for the sequence.**
+
+The cash flows pertaining to $a_{\angln}$ has one extra cash flow at time $n$ compared to that of $a_{\angl{n-1}}$. This additional cash flow is discounted $n$ periods in the calculation of $a_{\angln}$. Hence,
+
+$$
+a_{\angln} = a_{\angl{n-1}} + v^n.
+$$
+
+# Question (b) {#qb}
+
+**Given an effective discrete periodic rate of 4% per period, tabulate the values of $a_{\angln}$ for
+$n \in [1, 40] \cap \mathbb{Z}$.**
+
+Applying the recursive equation $n-1$ times, noticing that $a_{\angl{1}} = v$, and applying the sum of terms of a geometric sequence formula,
+
+$$
+a_{\angln} = a_{\angl{1}} + \sum_{t=2}^{n}\left(v^t\right) = \sum_{t=1}^{n}\left(v^t\right) = \frac{v(1-v^n)}{1-v} = \frac{1-v^n}{(1+i)-1} = \frac{1-v^n}{i}.
+$$
+
+When $i=4\%$, this formula gives the following values of $a_{\angln}$ for $n \in [1, 40] \cap \mathbb{Z}$.
+
+```{r}
+tibble(n = 1:40, i = rep(0.04, times = 40), a_n = ((1-(1+i)^-n)/i) %>% round(2)) %>% 
+  kbl(col.names = c("$n$", "$i$", "$a_{\\angln}$"), escape = FALSE) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  column_spec(1, border_left = TRUE) %>% 
+  column_spec(3, border_right = TRUE)
+```
+
+# Question (c) {#qc}
+
+**Repeat parts (a) and (b) for $(Ia)_{\angln}$ instead of $a_{\angln}$.**
+
+The cash flows pertaining to $(Ia)_{\angln}$ has one extra cash flow at time $n$ with value $n$ compared to that of $(Ia)_{\angl{n-1}}$. This additional cash flow is discounted $n$ periods in the calculation of $(Ia)_{\angln}$. Hence,
+
+$$
+(Ia)_{\angln} = (Ia)_{\angl{n-1}} + nv^n.
+$$
+
+Applying the recursive equation $n-1$ times,
+
+\begin{equation*}
+\begin{aligned}
+(Ia)_{\angln} &= (Ia)_{\angl{1}} + \sum_{t=2}^{n}\left(tv^t\right) = \sum_{t=1}^{n}\left(tv^t\right) \\
+(1+i)(Ia)_{\angln} &= \sum_{t=1}^{n}\left(tv^{t-1}\right) = \sum_{t=0}^{n-1}\left((t+1)v^{t}\right) \\
+(1+i-1)(Ia)_{\angln} &= 1 + \sum_{t=1}^{n-1}\left((t+1-t)v^t\right) - nv^n \\
+i(Ia)_{\angln} &= \sum_{t=0}^{n-1}\left(v^t\right) - nv^n = (1+i)a_{\angln}-nv^n \\
+(Ia)_{\angln} &= \frac{(1+i)a_{\angln}-nv^n}{i}.
+\end{aligned}
+\end{equation*}
+
+When $i=4\%$, this formula gives the following values of $(Ia)_{\angln}$ for $n \in [1, 40] \cap \mathbb{Z}$.
+
+```{r}
+tibble(n = 1:40, i = rep(0.04, times = 40), Ia_n = (((1+i)*(1-(1+i)^-n)/i-n*(1+i)^-n)/i) %>% round(2)) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$"), escape = FALSE) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  column_spec(1, border_left = TRUE) %>% 
+  column_spec(3, border_right = TRUE)
+```
+
+# Question (d) {#qd}
+
+**Suppose that we would like to develop the relevant calculations for a new actuarial
+notation defined as $(Qa)_{\angln}=\sum_{t=1}^{n}\left(t^2v^t\right)$. Repeat parts (a) and (b) for $(Qa)_{\angln}$ instead of $a_{\angln}$.**
+
+The cash flows pertaining to $(Qa)_{\angln}$ has one extra cash flow at time $n$ with value $n^2$ compared to that of $(Qa)_{\angl{n-1}}$. This additional cash flow is discounted $n$ periods in the calculation of $(Qa)_{\angln}$. Hence,
+
+$$
+(Qa)_{\angln} = (Qa)_{\angl{n-1}} + n^2v^n.
+$$
+
+$(Qa)_{\angl{1}} = v$. $(Qa)_{\angl{2}}$ can be found by applying this formula using the cell entry for $(Qa)_{\angl{1}}$. This formula can then be applied recursively until one reaches their desired target.
+
+```{r}
+n <- 1:40
+i <- rep(0.04, times = 40)
+y <- numeric()
+y[1] <- (1+i[1])^-1
+for (x in seq_along(n)[2:length(n)]) {
+  y[x] <- y[x-1] + x*(1+i[x])^x
+}
+tibble(n = 1:40, i = rep(0.04, times = 40), Qa_n = round(y, 2)) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Qa)_{\\angln}$"), escape = FALSE) %>% 
+  kable_styling(latex_options = "HOLD_position") %>% 
+  column_spec(1, border_left = TRUE) %>% 
+  column_spec(3, border_right = TRUE)
+rm(list = ls())
+```
+
+# Question (e) {#qe}
+
+**Simplify $(I\ddot{a})_{\angln}-(Ia)_{\angln}$ and hence derive a formula for $(Ia)_{\angln}$.**
+
+\begin{equation*}
+\begin{aligned}
+(I\ddot{a})_{\angln}-(Ia)_{\angln} &= \sum_{t=0}^{t=n-1}\left((t+1)v^t\right) - \sum_{t=1}^{n}\left(tv^t\right) \\
+&= 1 + \sum_{t=1}^{n-1}\left(v^t\right) - nv^n \\
+&= \ddot{a}_{\angln} - nv^n
+\end{aligned}
+\end{equation*}
+
+But $(I\ddot{a})_{\angln} = (1+i)(Ia)_{\angln}$, so
+
+\begin{equation*}
+\begin{aligned}
+(1+i-1)(Ia)_{\angln} &= \ddot{a}_{\angln} - nv^n \\
+(Ia)_{\angln} &= \frac{\ddot{a}_{\angln} - nv^n}{i}.
+\end{aligned}
+\end{equation*}
+
+# Question (f) {#qf}
+
+**Suppose that $(Q\ddot{a})_{\angln} = \sum_{t=1}^{n}\left(t^2v^{t-1}\right)$, simplify $(Q\ddot{a})_{\angln} - (Qa)_{\angln}$ and hence derive a formula for $(Qa)_{\angln}$.**
+
+\begin{equation*}
+\begin{aligned}
+(Q\ddot{a})_{\angln}-(Qa)_{\angln} &= \sum_{t=0}^{t=n-1}\left((t+1)^2v^t\right) - \sum_{t=1}^{n}\left(t^2v^t\right) \\
+&= 1 + \sum_{t=1}^{n-1}\left((t^2+2t+1-t^2)v^t\right) - n^2v^n \\
+&= 1 + 2\sum_{t=1}^{n-1}\left(tv^t\right) + \sum_{t=1}^{n-1}\left(v^t\right) - n^2v^n \\
+&= 2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n
+\end{aligned}
+\end{equation*}
+
+But $(Q\ddot{a})_{\angln} = (1+i)(Qa)_{\angln}$, so
+
+\begin{equation*}
+\begin{aligned}
+(1+i-1)(Qa)_{\angln} &= 2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n \\
+(Qa)_{\angln} &= \frac{2(Ia)_{\angl{n-1}} + \ddot{a}_{\angl{n}} - n^2v^n}{i}.
+\end{aligned}
+\end{equation*}
+
+# Question (g) {#qg}
+
+
+
+
+
+
+
+
+
+
+
