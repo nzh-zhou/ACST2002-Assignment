@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 options(scipen=999)
 ```
 
-Note: This report was written in `R`. Code for tables is shown to demonstrate methodology. The methodology can also be understood by viewing cell formulas in the Excel spreadsheet.
+Note: This report was written in `R`. Code for tables is shown to demonstrate methodology. The methodology can also be understood by viewing cell formulas in the Excel spreadsheet. The source code can be found [\textcolor{blue}{here}](https://github.com/nzh-zhou/ACST2002-Assignment) after I make the repo public.
 
 ```{r, echo = TRUE, message = FALSE}
 library(tidyverse)
@@ -42,9 +42,10 @@ $n \in [1, 40] \cap \mathbb{Z}$.**
 
 Applying the recursive equation $n-1$ times, noticing that $a_{\angl{1}} = v$, and applying the sum of terms of a geometric sequence formula,
 
-$$
-a_{\angln} = a_{\angl{1}} + \sum_{t=2}^{n}\left(v^t\right) = \sum_{t=1}^{n}\left(v^t\right) = \frac{v(1-v^n)}{1-v} = \frac{1-v^n}{(1+i)-1} = \frac{1-v^n}{i}.
-$$
+\begin{align}
+a_{\angln} &= a_{\angl{1}} + \sum_{t=2}^{n}\left(v^t\right) = \sum_{t=1}^{n}\left(v^t\right) = \frac{v(1-v^n)}{1-v} = \frac{1-v^n}{(1+i)-1} \nonumber\\
+a_{\angln} &= \frac{1-v^n}{i}. (\#eq:an)
+\end{align}
 
 When $i=4\%$, after applying this formula, the following table gives the values of $a_{\angln}$ for all $n \in [1, 40] \cap \mathbb{Z}$.
 
@@ -208,19 +209,106 @@ Both approaches can be split into two steps: writing a formula, and then applyin
 
 # Question (i)
 
-**A loan of $700,000 is to be fully repaid by 25 level annual repayments made in arrears at an effective annual rate of 4% per annum. Calculate the amount of the level annual repayment.**
+**A loan of \$700,000 is to be fully repaid by 25 level annual repayments made in arrears at an effective annual rate of 4% per annum. Calculate the amount of the level annual repayment.**
 
 Let the annual repayment amount be $X$. Since the loan is fully repaid, the present value of the $700,000 cash flow must equal the present value of the 25 annual repayment cash flows.
 
 \begin{align*}
 700000 &= \sum_{t=1}^{25}\left(X\cdot(1.04)^{-t}\right) \\
-700000 &= Xa_{\angl{25}} \\
-X &= \frac{700000}{a_{\angl{25}}} = `r (700000 / a_n[25]) %>% round(2)`\;\;\text{ from Table \ref{tab:an}.}
+&= Xa_{\angl{25}} \\
+X &= \frac{700000}{a_{\angl{25}}} = 
+  `r (700000 / a_n[25]) %>% round(2)`\text{ (2dp)}\;\;\text{ from Table \ref{tab:an}.}
 \end{align*}
 
 # Question (j)
 
-**A loan of $450,000 is to be fully repaid by level semi-annual repayments made in arrears for the next 8 years. The equivalent constant force of interest for this loan is 7.8441426% per annum. Calculate the amount of the capital repayment between the 3rd and the 6th year.**
+**A loan of \$450,000 is to be fully repaid by level semi-annual repayments made in arrears for the next 8 years. The equivalent constant force of interest for this loan is 7.8441426% per annum. Calculate the amount of the capital repayment between the 3rd and the 6th year.**
+
+Let time $t$ be measured in years and let the loan start at $t=0$. Let $t_0$ be an arbitrary positive real number measured in years. With a constant force of interest, the effective semi-annual interest rate, $i_{0.5}$, can be calculated as follows.
+
+\begin{align*}
+A(t_0, t_0+0.5) = (1+i_{0.5}) &= exp\left[\int_{t_0}^{t_0+0.5}\left(7.8441426 \cdot 10^{-2}\right)\,\mathrm{d}t\right] \\
+i_{0.5} &= exp\left(7.8441426 \cdot 10^{-2} \cdot 0.5\right)-1 = 
+  `r round(i_0.5 <- exp(7.8441426 * 10^-2 * 0.5)-1, 4) %>% format(nsmall = 4)` \text{ (4dp)}
+\end{align*}
+
+Let the semi-annual repayment amount be $X$. Since the loan is fully repaid, the present value of the $450,000 cash flow must equal the present value of the 16 semi-annual repayment cash flows.
+
+\begin{align*}
+450000 &= \sum_{u=1}^{16}\left(X \cdot (1+i_{0.5})^{-u}\right) = Xa_{\angl{16} i_{0.5}} \\
+X &= \frac{450000}{a_{\angl{16} i_{0.5}}} = 
+  `r round(X <- 450000 / a_n[16], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an}.}
+\end{align*}
+
+Let $L_v$ represent the outstanding loan amount after the cash flow when $t=v$. The total capital repayment amount between the 3rd and the 6th year is equal to the negative of the change in the outstanding loan amount in that period.
+
+\begin{align*}
+-(L_6-L_2) &= L_2-L_6 \\
+&= \sum_{u=1}^{12}\left(X \cdot (1+i_{0.5})^{-u}\right) - 
+  \sum_{u=1}^{4}\left(X \cdot (1+i_{0.5})^{-u}\right) \\
+&= X\cdot\sum_{u=5}^{12}\left((1+i_{0.5})^{-u}\right) = 
+  (1+i_{0.5})^{-4}X\cdot\sum_{u=1}^{8}\left((1+i_{0.5})^{-u}\right) \\
+&= (1+i_{0.5})^{-4}Xa_{\angl{8}i_{0.5}} \\
+&= `r round((1+i_0.5)^-4 * X * a_n[8], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an}.}
+\end{align*}
+
+```{r}
+rm(i_0.5, X)
+```
+
+# Question (k)
+
+**Calculate the present value at time 0 of a 10-year continuous annuity with a payment rate of \$300 per annum under an effective annual rate of 1.9804%.**
+
+Let $PV$ be the required present value and let $i_1 = 0.019804$. Notice that $i_2\equiv\left(1+i_1\right)^2-1 = `r round(i_2 <- (1+0.019804)^2-1, 4) %>% format(nsmall = 4)`$ (4dp).
+
+\begin{align*}
+\begin{split}
+PV &= \int_{0}^{10}\left(300 \cdot (1+i_1)^{-t}\right)\,\mathrm{d}t 
+\end{split}
+\intertext{Let $t=2u$.}
+\begin{split}
+PV &= \int_{0}^{5}\left(300 \cdot (1+i_1)^{-2u}\right)\,2\mathrm{d}u \\
+&= 600\int_{0}^{5}\left((1+i_2)^{-u}\right)\,\mathrm{d}u \\
+&= 600\int_{0}^{5}\left(exp\left[-ln(1+i_2)u\right]\right)\,\mathrm{d}u \\
+&= 600\left[\frac{-(1+i_2)^{-u}}{ln(1+i_2)}\right]_{0}^{5} \\
+&= 600\cdot\frac{1-(1+i_2)^{-5}}{ln(1+i_2)} \\
+&= 600\cdot\frac{i_2}{ln(1+i_2)}\cdot\frac{1-(1+i_2)^{-5}}{i_2} \\
+&= \frac{600\;i_2}{ln(1+i_2)}a_{\angl{5}i_2} \;\;\text{ from equation \ref{eq:an}} \\
+PV &= `r round((600 * i_2 / log(1+i_2)) * a_n[5], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an}.}
+\end{split}
+\end{align*}
+
+```{r}
+rm(i_2)
+```
+
+# Question (l)
+
+**Given an effective annual rate of 4%, calculate the present value at time 0 of a 20-year arithmetically increasing annuity immediate whereby the first annual payment is \$6,000 and subsequent annual increment is \$500.**
+
+\begin{align*}
+PV &= \sum_{t=1}^{20}\left((5500+500t) \cdot 1.04^{-t}\right) \\
+&= \sum_{t=1}^{20}\left(5500\cdot 1.04^{-t}\right) + \sum_{t=1}^{20}\left(500t \cdot 1.04^{-t}\right) \\
+&= 5500a_{\angl{20}} + 500(Ia)_{\angl{20}} \\
+&= `r round(5500 * a_n[20] + 500 * Ia_n[20], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an} and \ref{tab:ian}.}
+\end{align*}
+
+# Question (m)
+
+**Consider a 25-year annuity immediate with a payment amount of $(26 - t)^2$ at the end of year $t$. For instance, the payment amount at the end of year 6 is \$400. Calculate its present value at time 0 given an effective annual rate of 4%.**
+
+\begin{align*}
+PV &= \sum_{u = 1}^{25}\left((26-u)^2 \cdot 1.04^{-u}\right) \\
+&= \sum_{u = 1}^{25}\left((26^2-52u+u^2) \cdot 1.04^{-u}\right) \\
+&= 26^2\sum_{u = 1}^{25}\left(1.04^{-u}\right) -  
+  52\sum_{u = 1}^{25}\left(u \cdot 1.04^{-u}\right) +
+  \sum_{u = 1}^{25}\left(u^2 \cdot 1.04^{-u}\right) \\
+&= 26^2a_{\angl{25}} - 52(Ia)_{\angl{25}} + (Qa)_{\angl{25}} \\
+&= `r round(26^2 * a_n[25] - 52 * Ia_n[25] + Qa_n[25], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an}, \ref{tab:ian}, and \ref{tab:qan}.}
+\end{align*}
+
+
 
 
 
