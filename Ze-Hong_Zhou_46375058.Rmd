@@ -165,7 +165,7 @@ But $(Q\ddot{a})_{\angln} = (1+i)(Qa)_{\angln}$, so
 **Using the formulae developed in parts (e) and (f), re-calculate the relevant values of
 annuity functions in parts (c) and (d).**
 
-The following two tables are constructed by applying equations \@ref(eq:ian) and \@ref(eq:qan) for all $n \in [1, 40] \cap \mathbb{Z}$.
+The following table is constructed by applying equations \@ref(eq:ian) and \@ref(eq:qan) for all $n \in [1, 40] \cap \mathbb{Z}$.
 
 ```{r, echo = TRUE}
 n0 <- 0:40
@@ -174,27 +174,16 @@ Ia_n0 = ((1+i0)*(1-(1+i0)^-n0)/i0 - n0*(1+i0)^-n0) / i0
 
 Ia_n <- Ia_n0[2:length(Ia_n0)]
 
-tibble(n. = n, i. = i, Ia_n. = round(Ia_n, 2)) %>% 
-  mutate(i. = paste0(i*100, "\\%")) %>% 
-  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$ (2dp)"), 
-      escape = FALSE, align = "rrr", longtable = TRUE) %>% 
-  kable_styling(latex_options = "HOLD_position") %>% 
-  column_spec(1, border_left = TRUE) %>% 
-  column_spec(3, border_right = TRUE)
-```
-
-```{r, echo = TRUE}
 Ia_n_1 <- Ia_n0[1:(length(Ia_n0)-1)]
-
 Qa_n <- (2*Ia_n_1 + (1+i)*(1-(1+i)^-n)/i - n^2*(1+i)^-n) / i
 
-tibble(n. = n, i. = i, Qa_n. = round(Qa_n, 2)) %>% 
+tibble(n. = n, i. = i, Ia_n. = round(Ia_n, 2), Qa_n. = round(Qa_n, 2)) %>% 
   mutate(i. = paste0(i*100, "\\%")) %>% 
-  kbl(col.names = c("$n$", "$i$", "$(Qa)_{\\angln} (2dp)$"), 
-      escape = FALSE, align = "rrr", longtable = TRUE) %>% 
+  kbl(col.names = c("$n$", "$i$", "$(Ia)_{\\angln}$ (2dp)", "$(Qa)_{\\angln}$ (2dp)"), 
+      escape = FALSE, align = "rrrr", longtable = TRUE) %>% 
   kable_styling(latex_options = "HOLD_position") %>% 
   column_spec(1, border_left = TRUE) %>% 
-  column_spec(3, border_right = TRUE)
+  column_spec(4, border_right = TRUE)
 ```
 
 # Question (h)
@@ -307,15 +296,3 @@ PV &= \sum_{u = 1}^{25}\left((26-u)^2 \cdot 1.04^{-u}\right) \\
 &= 26^2a_{\angl{25}} - 52(Ia)_{\angl{25}} + (Qa)_{\angl{25}} \\
 &= `r round(26^2 * a_n[25] - 52 * Ia_n[25] + Qa_n[25], 2) %>% format(nsmall = 2)` \text{ (2dp)}\;\;\text{ from Table \ref{tab:an}, \ref{tab:ian}, and \ref{tab:qan}.}
 \end{align*}
-
-
-
-
-
-
-
-
-
-
-
-
